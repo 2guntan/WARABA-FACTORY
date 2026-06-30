@@ -81,7 +81,7 @@ def check_job(job_id: str):
         return f"❌ Error: {e}"
 
 
-with gr.Blocks(title="WARABA Director", theme=gr.themes.Soft()) as demo:
+with gr.Blocks(title="WARABA Director") as demo:
     gr.Markdown("# 🎬 WARABA Director — Generation Control")
 
     with gr.Row():

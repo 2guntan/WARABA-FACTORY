@@ -1,115 +1,125 @@
 #!/usr/bin/env python3
 """
-RunPod FastAPI Skeleton for WARABA-DIRECTOR + JoyAI-Echo
-
-This is a starter FastAPI application meant to run inside a RunPod Pod.
-It provides endpoints to:
-- Register characters
-- Submit generation jobs (Character + Shots)
-- Check status and retrieve results
-
-Intended to be extended with actual JoyAI-Echo inference logic.
+RunPod FastAPI server for WARABA JoyAI-Echo Pod.
+Exposes /health, /generate, /status/{job_id} for the VPS orchestrator.
 """
 
-from fastapi import FastAPI, BackgroundTasks
-from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
-import uuid
+import os
 import asyncio
+import subprocess
+import uuid
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, Any, Optional, List
 
-app = FastAPI(title="WARABA-DIRECTOR JoyAI-Echo Orchestrator")
+from fastapi import FastAPI
+from pydantic import BaseModel
+import json
 
-# In-memory storage (replace with proper DB / Redis in production)
+app = FastAPI(title="WARABA JoyAI-Echo Pod API")
+
 jobs: Dict[str, Dict[str, Any]] = {}
-characters: Dict[str, Dict[str, Any]] = {}
+
+JOYAI_DIR = Path(os.environ.get("JOYAI_DIR", "/workspace/JoyAI-Echo"))
+OUTPUT_DIR = Path(os.environ.get("OUTPUT_DIR", "/workspace/outputs"))
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-class CharacterProfile(BaseModel):
-    character_id: str
-    name: str
-    physical_description: str
-    voice: Dict[str, str]
-    # Add other fields as needed
-
-
-class Shot(BaseModel):
-    shot_id: str
-    description: str
-    camera: Optional[str] = None
-    style: Optional[str] = None
-    background: Optional[str] = None
-    audio: Optional[str] = None
-
+# ── Models ──────────────────────────────────────────────────────────────────
 
 class GenerationRequest(BaseModel):
-    character_id: str
-    shots: List[Shot]
-    episode_id: Optional[str] = None
+    job_id: Optional[str] = None  # provided by orchestrator
+    character: Dict[str, Any]
+    shots: Any  # list or dict with shots key
+    episode_name: Optional[str] = ""
 
 
-@app.get("/")
-async def root():
-    return {"message": "WARABA-DIRECTOR + JoyAI-Echo Orchestrator running"}
+# ── Endpoints ───────────────────────────────────────────────────────────────
 
-
-@app.post("/characters")
-async def register_character(character: CharacterProfile):
-    characters[character.character_id] = character.dict()
-    return {"status": "registered", "character_id": character.character_id}
+@app.get("/health")
+async def health():
+    return {"ok": True}
 
 
 @app.post("/generate")
-async def generate_video(request: GenerationRequest, background_tasks: BackgroundTasks):
-    job_id = str(uuid.uuid4())
-    
+async def generate(request: GenerationRequest):
+    job_id = request.job_id or str(uuid.uuid4())[:8]
     jobs[job_id] = {
         "job_id": job_id,
         "status": "queued",
         "created_at": datetime.utcnow().isoformat(),
-        "character_id": request.character_id,
-        "shots_count": len(request.shots),
-        "result_url": None
+        "result_url": None,
+        "error": None,
     }
-    
-    # TODO: Replace with actual background task that:
-    # 1. Loads character + assembles prompts
-    # 2. Starts JoyAI-Echo inference (or calls local model)
-    # 3. Saves output video
-    # 4. Updates job status
-    
-    background_tasks.add_task(process_generation, job_id, request)
-    
+    asyncio.create_task(_run_inference(job_id, request))
     return {"job_id": job_id, "status": "queued"}
 
 
-async def process_generation(job_id: str, request: GenerationRequest):
-    """Background task placeholder for actual generation logic."""
-    jobs[job_id]["status"] = "processing"
-    
-    # Simulate processing time (replace with real JoyAI-Echo call)
-    await asyncio.sleep(5)
-    
-    # TODO: Integrate with JoyAI-Echo here
-    # Example: call local inference or trigger another service
-    
-    jobs[job_id]["status"] = "completed"
-    jobs[job_id]["result_url"] = f"https://storage.example.com/videos/{job_id}.mp4"
-    jobs[job_id]["completed_at"] = datetime.utcnow().isoformat()
-
-
 @app.get("/status/{job_id}")
-async def get_status(job_id: str):
+async def status(job_id: str):
     if job_id not in jobs:
         return {"error": "Job not found"}
     return jobs[job_id]
 
 
-@app.get("/result/{job_id}")
-async def get_result(job_id: str):
-    if job_id not in jobs or jobs[job_id]["status"] != "completed":
-        return {"error": "Result not ready"}
-    return {"job_id": job_id, "result_url": jobs[job_id]["result_url"]}
+# ── Inference ────────────────────────────────────────────────────────────────
+
+async def _run_inference(job_id: str, request: GenerationRequest):
+    jobs[job_id]["status"] = "processing"
+    try:
+        # Build prompt from character + shots
+        prompt = _build_prompt(request.character, request.shots)
+        prompt_file = OUTPUT_DIR / f"{job_id}_prompt.txt"
+        prompt_file.write_text(prompt)
+
+        output_path = OUTPUT_DIR / f"{job_id}.mp4"
+
+        # Call JoyAI-Echo inference
+        cmd = [
+            "python", str(JOYAI_DIR / "inference.py"),
+            "--prompt", str(prompt_file),
+            "--output", str(output_path),
+        ]
+
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+            cwd=str(JOYAI_DIR),
+        )
+        stdout, _ = await proc.communicate()
+
+        if proc.returncode == 0 and output_path.exists():
+            jobs[job_id]["status"] = "completed"
+            jobs[job_id]["result_url"] = str(output_path)
+        else:
+            jobs[job_id]["status"] = "failed"
+            jobs[job_id]["error"] = stdout.decode()[-1000:] if stdout else "Unknown error"
+
+    except Exception as e:
+        jobs[job_id]["status"] = "failed"
+        jobs[job_id]["error"] = str(e)
+    finally:
+        jobs[job_id]["completed_at"] = datetime.utcnow().isoformat()
+
+
+def _build_prompt(character: dict, shots: Any) -> str:
+    name = character.get("name", "character")
+    description = character.get("physical_description", "")
+    personality = character.get("personality", "")
+
+    shots_list = shots if isinstance(shots, list) else shots.get("shots", [])
+    shots_text = "\n".join(
+        f"Shot {s.get('shot_id', i+1)}: {s.get('description', '')}"
+        for i, s in enumerate(shots_list)
+    )
+
+    return f"""Character: {name}
+Description: {description}
+Personality: {personality}
+
+Shots:
+{shots_text}"""
 
 
 if __name__ == "__main__":

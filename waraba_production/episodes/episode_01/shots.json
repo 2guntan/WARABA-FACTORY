@@ -1,0 +1,77 @@
+{
+  "episode_id": "episode_01_le_plus_jeune_animal",
+  "title": "Le plus jeune animal",
+  "duration": "2:32",
+  "shots": [
+    {
+      "shot_id": "SH001",
+      "time": "00:00–00:08",
+      "duration_sec": 8,
+      "description": "Plan large d’ensemble, léger angle frontal. Établissement de la clairière et de l’arbre à palabres. L’assemblée est déjà réunie. Ambiance de crépuscule et ouverture du Griot en voix hors champ.",
+      "camera": "Plan large d’ensemble, léger angle frontal",
+      "style": "Cinematic, realistic lighting, warm twilight atmosphere, detailed savanna environment",
+      "background": "Savanna clearing with large acacia tree at dusk, animals gathered in a circle",
+      "audio": "Griot voice in voice-over, subtle ambient savanna sounds, wind"
+    },
+    {
+      "shot_id": "SH002",
+      "time": "00:08–00:15",
+      "duration_sec": 7,
+      "description": "Plan moyen large sur le cercle. Gaïndé est visible dans une position stable, avec les animaux répartis autour de lui. Murmures discrets.",
+      "camera": "Plan moyen large sur le cercle",
+      "style": "Cinematic, realistic lighting",
+      "background": "Circle of animals in the savanna clearing, Gaïndé at the center",
+      "audio": "Subtle murmurs from the assembly, ambient savanna sounds"
+    },
+    {
+      "shot_id": "SH007",
+      "time": "00:46–00:56",
+      "duration_sec": 10,
+      "description": "Plan moyen dynamique. Le Singe bondit au centre et affirme qu’il vient de naître.",
+      "camera": "Plan moyen dynamique",
+      "style": "Dynamic camera movement, energetic",
+      "background": "Center of the circle, animals reacting",
+      "audio": "Singe voice, surprised reactions from the assembly"
+    },
+    {
+      "shot_id": "SH011",
+      "time": "01:16–01:24",
+      "duration_sec": 8,
+      "description": "Contre-plongée vers les branches. La voix de Leuk descend depuis le haut : « Attention ! Je vais naître. Un peu de place pour me recevoir. »",
+      "camera": "Contre-plongée vers les branches",
+      "style": "Dramatic low angle, tension building",
+      "background": "Branches of the acacia tree, Leuk hidden above",
+      "audio": "Leuk’s voice from above, sudden silence from the assembly"
+    },
+    {
+      "shot_id": "SH014",
+      "time": "01:36–01:40",
+      "duration_sec": 4,
+      "description": "Plan large vertical. Trajectoire lisible de Leuk vers le centre du cercle. Silence suspendu et souffle d’air.",
+      "camera": "Plan large vertical, following the fall",
+      "style": "Cinematic slow-motion feel, dramatic",
+      "background": "Vertical view from branches to the center of the circle",
+      "audio": "Silence, then soft impact and dust"
+    },
+    {
+      "shot_id": "SH016",
+      "time": "01:48–01:58",
+      "duration_sec": 10,
+      "description": "Plan moyen sur Leuk. Il ouvre un œil, se redresse, s’époussette et dit : « Me voici. » L’assemblée éclate de rire.",
+      "camera": "Plan moyen sur Leuk",
+      "style": "Warm, comedic timing",
+      "background": "Center of the circle, animals surrounding Leuk",
+      "audio": "Leuk’s line, then loud laughter from the assembly"
+    },
+    {
+      "shot_id": "SH019",
+      "time": "02:20–02:32",
+      "duration_sec": 12,
+      "description": "Plan moyen final sur Leuk. Les regards convergent vers lui. La lumière se réchauffe légèrement. Son sourire dure un peu trop longtemps. Le Griot conclut en voix hors champ.",
+      "camera": "Plan moyen final, slight push-in",
+      "style": "Warm golden light, slightly unsettling final smile",
+      "background": "Circle of animals looking at Leuk",
+      "audio": "Griot voice-over conclusion, fading ambient sounds"
+    }
+  ]
+}

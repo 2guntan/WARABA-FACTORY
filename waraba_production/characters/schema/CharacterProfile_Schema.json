@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CharacterProfile",
+  "description": "Structured character definition optimized for JoyAI-Echo text prompts. Generated from reference images via a separate Character Definition Tool.",
+  "type": "object",
+  "required": ["character_id", "name", "physical_description", "voice"],
+  "properties": {
+    "character_id": {
+      "type": "string",
+      "description": "Unique identifier, e.g. leuk_young_hare_v1"
+    },
+    "name": {
+      "type": "string",
+      "description": "Character display name"
+    },
+    "species": {
+      "type": "string",
+      "description": "e.g. Young hare, Lion, etc."
+    },
+    "age_appearance": {
+      "type": "string",
+      "description": "Perceived age (Young adult, Elder, Child, etc.)"
+    },
+    "physical_description": {
+      "type": "string",
+      "description": "Detailed visual description optimized for JoyAI-Echo. Include build, fur/skin, face, hair, posture, distinctive features."
+    },
+    "clothing": {
+      "type": "string",
+      "description": "Clothing or accessories description"
+    },
+    "distinctive_features": {
+      "type": "string",
+      "description": "Unique visual traits (ear movement, expressions, gait, etc.)"
+    },
+    "voice": {
+      "type": "object",
+      "properties": {
+        "timbre": {
+          "type": "string",
+          "description": "Voice quality description (e.g. Clear young male voice with mischievous quality)"
+        },
+        "tone": {
+          "type": "string",
+          "description": "Overall tone and personality in voice"
+        }
+      },
+      "required": ["timbre"]
+    },
+    "personality_traits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Key personality traits that influence behavior and expressions"
+    },
+    "reference_version": {
+      "type": "string",
+      "description": "Version of the reference images used (e.g. v1, v2)"
+    },
+    "locked_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when character visual was locked"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Any additional notes for prompt engineering or consistency"
+    }
+  }
+}
